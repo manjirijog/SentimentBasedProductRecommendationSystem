@@ -1,32 +1,102 @@
-<!-- Form to get recommendations by User ID -->
-<form method="post" action="/predict">
-    <input type="text" name="user_input" placeholder="Enter User ID">
-    <input type="submit" value="Get Recommendations">
-</form>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sentiment-Based Product Recommender</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; background-color: #f9f9f9; }
+        h1 { color: #333; }
+        form { margin-bottom: 30px; }
+        input[type="text"], textarea {
+            padding: 8px;
+            width: 300px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        input[type="submit"] {
+            padding: 8px 16px;
+            margin-top: 8px;
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        table {
+            width: 80%;
+            border-collapse: collapse;
+            margin-top: 30px;
+        }
+        table, th, td {
+            border: 1px solid #ccc;
+        }
+        th, td {
+            padding: 10px;
+            text-align: center;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .error { color: red; }
+        .success { color: green; }
+    </style>
+</head>
+<body>
 
-<!-- Show product recommendations -->
-{% if column_names %}
-    <h3>Recommendations for {{ user }}</h3>
-    <table border="1">
-        <tr>{% for col in column_names %}<th>{{ col }}</th>{% endfor %}</tr>
-        {% for row in row_data %}
-            <tr>{% for item in row %}<td>{{ item }}</td>{% endfor %}</tr>
-        {% endfor %}
-    </table>
-{% endif %}
+    <h1>Sentiment-Based Product Recommender</h1>
 
-<!-- Form to classify sentiment of free-form review -->
-<form method="post" action="/predictSentiment">
-    <textarea name="reviewText" rows="5" cols="60" placeholder="Write a review..."></textarea><br>
-    <input type="submit" value="Classify Sentiment">
-</form>
+    <!-- Form to get recommendations by user -->
+    <form method="post" action="/predict">
+        <label>Enter User ID:</label><br>
+        <input type="text" name="user_input" placeholder="e.g., user123"><br>
+        <input type="submit" value="Get Recommendations">
+    </form>
 
-<!-- Show sentiment result -->
-{% if sentiment %}
-    <h3>Review Sentiment: {{ sentiment }}</h3>
-{% endif %}
+    {% if user %}
+        <h3>Recommendations for {{ user }}</h3>
+    {% endif %}
 
-<!-- Error messages -->
-{% if message %}
-    <p style="color:red;">{{ message }}</p>
-{% endif %}
+    {% if message %}
+        <p class="error">{{ message }}</p>
+    {% endif %}
+
+    {% if column_names|length > 0 and row_data|length > 0 %}
+        <table>
+            <thead>
+                <tr>
+                    {% for col in column_names %}
+                        <th>{{ col }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in row_data %}
+                    <tr>
+                        {% for item in row %}
+                            <td>{{ item }}</td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+    <hr>
+
+    <!-- Form to classify review sentiment -->
+    <form method="post" action="/predictSentiment">
+        <label>Write a Product Review:</label><br>
+        <textarea name="reviewText" rows="4" cols="50" placeholder="Write something..."></textarea><br>
+        <input type="submit" value="Classify Sentiment">
+    </form>
+
+    {% if review_text %}
+        <h4>Your Review:</h4>
+        <p>{{ review_text }}</p>
+    {% endif %}
+
+    {% if sentiment %}
+        <h4>Predicted Sentiment: <span class="success">{{ sentiment }}</span></h4>
+    {% endif %}
+
+</body>
+</html>
