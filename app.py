@@ -1,1 +1,53 @@
-{"nbformat":4,"nbformat_minor":0,"metadata":{"colab":{"provenance":[],"authorship_tag":"ABX9TyNL5QUcFtSGhX0VflmU2Ynz"},"kernelspec":{"name":"python3","display_name":"Python 3"},"language_info":{"name":"python"}},"cells":[{"cell_type":"code","execution_count":null,"metadata":{"id":"Au-IddJrq7lZ"},"outputs":[],"source":["from flask import Flask, request, render_template\n","from email import header\n","from operator import index\n","from flask import Flask, request, render_template, jsonify\n","from model import get_sentiment_recommendations\n","\n","app = Flask(__name__)app = Flask(__name__)\n","\n","sentiment_model = get_sentiment_recommendations()\n","@app.route('/')\n","def home():\n","    return render_template('index.html')\n","\n","\n","@app.route('/predict', methods=['POST'])\n","def prediction():\n","    # get user from the html form\n","    user = request.form['userName']\n","    # convert text to lowercase\n","    user = user.lower()\n","    items = sentiment_model.get_sentiment_recommendations(user)\n","\n","    if(not(items is None)):\n","        print(f\"retrieving items....{len(items)}\")\n","        print(items)\n","        # data=[items.to_html(classes=\"table-striped table-hover\", header=\"true\",index=False)\n","        return render_template(\"index.html\", column_names=items.columns.values, row_data=list(items.values.tolist()), zip=zip)\n","    else:\n","        return render_template(\"index.html\", message=\"User Name doesn't exists, No product recommendations at this point of time!\")\n","\n","\n","@app.route('/predictSentiment', methods=['POST'])\n","def predict_sentiment():\n","    # get the review text from the html form\n","    review_text = request.form[\"reviewText\"]\n","    print(review_text)\n","    pred_sentiment = sentiment_model.classify_sentiment(review_text)\n","    print(pred_sentiment)\n","    return render_template(\"index.html\", sentiment=pred_sentiment)\n","\n","\n","if __name__ == '__main__':\n","    app.run()"]}]}
+from flask import Flask, request, render_template
+import model  # Your model.py file with the functions
+from model import get_sentiment_recommendations, classify_sentiment
+
+app = Flask(__name__)
+
+@app.route('/')
+def home():
+    """
+    Render the homepage with the input form.
+    """
+    return render_template('index.html')
+
+
+@app.route('/predict', methods=['POST'])
+def prediction():
+    """
+    Handle user ID input and return product recommendations.
+    """
+    user = request.form.get('user_input')
+    if not user:
+        return render_template("index.html", message="Please enter a user name.")
+
+    user = user.lower()
+    items = get_sentiment_recommendations(user)
+
+    if isinstance(items, str):  # User doesn't exist (function returned error string)
+        return render_template("index.html", message=items)
+    else:
+        return render_template("index.html",
+                               column_names=items.columns.values,
+                               row_data=list(items.values.tolist()),
+                               zip=zip,
+                               user=user)
+
+
+@app.route('/predictSentiment', methods=['POST'])
+def predict_sentiment():
+    """
+    Handle free-form review and classify it as positive or negative.
+    """
+    review_text = request.form.get("reviewText")
+    if not review_text:
+        return render_template("index.html", sentiment="Please enter review text.")
+    
+    prediction = classify_sentiment(review_text)
+    sentiment = "Positive" if prediction == 1 else "Negative"
+    
+    return render_template("index.html", sentiment=sentiment, review_text=review_text)
+
+
+if __name__ == '__main__':
+    app.run(debug=True)
