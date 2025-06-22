@@ -1,0 +1,104 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sentiment & Product Recommendation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 40px;
+            background-color: #f9f9f9;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        textarea, input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+        }
+        input[type="submit"] {
+            padding: 10px 20px;
+            background-color: #007BFF;
+            border: none;
+            color: white;
+            cursor: pointer;
+        }
+        table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #aaa;
+            padding: 8px;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .message, .sentiment {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #eef;
+            border-left: 5px solid #007BFF;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Sentiment Analysis & Product Recommendation</h1>
+
+    <!-- Form to get product recommendations by username -->
+    <h2>Product Recommendation</h2>
+    <form method="POST" action="/predict">
+        <label for="userName">Enter your username:</label>
+    <input type="text" name="userName" required>
+    <p style="font-size: 0.9em; color: #666;">
+        Example usernames: <strong>rebecca</strong>, <strong>joshua</strong>, <strong>samantha</strong>, <strong>dorothy</strong>, <strong>zitro</strong>, <strong>02dakota</strong>, <strong>123charlie</strong>, <strong>08dallas</strong>
+    </p>
+    <input type="submit" value="Get Recommendations">
+    </form>
+
+    {% if message %}
+    <div class="message">{{ message }}</div>
+    {% endif %}
+
+    {% if row_data %}
+    <h3>Top Recommended Products</h3>
+    <table>
+        <thead>
+            <tr>
+                {% for col in column_names %}
+                <th>{{ col }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in row_data %}
+            <tr>
+                {% for item in row %}
+                <td>{{ item }}</td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+
+    <!-- Form to analyze review sentiment -->
+    <h2>Sentiment Analysis</h2>
+    <form method="POST" action="/predictSentiment">
+        <label for="reviewText">Enter your review:</label>
+        <textarea name="reviewText" rows="4" required></textarea>
+        <input type="submit" value="Analyze Sentiment">
+    </form>
+
+    {% if sentiment %}
+    <div class="sentiment">
+        <strong>Predicted Sentiment:</strong> {{ sentiment }}
+    </div>
+    {% endif %}
+
+</body>
+</html>
