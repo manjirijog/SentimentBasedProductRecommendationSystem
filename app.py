@@ -1,6 +1,7 @@
 from flask import Flask, request, render_template
 import model  # Your model.py file with the functions
 from model import get_sentiment_recommendations, classify_sentiment
+import pandas as pd
 
 app = Flask(__name__)
 
@@ -14,9 +15,6 @@ def home():
 
 @app.route('/predict', methods=['POST'])
 def prediction():
-    """
-    Handle user ID input and return product recommendations.
-    """
     user = request.form.get('user_input')
     if not user:
         return render_template("index.html", message="Please enter a user name.")
@@ -24,14 +22,22 @@ def prediction():
     user = user.lower()
     items = get_sentiment_recommendations(user)
 
-    if isinstance(items, str):  # User doesn't exist (function returned error string)
+    print("DEBUG - type of items:", type(items))
+    print("DEBUG - content of items:", items)
+
+    if isinstance(items, str):
         return render_template("index.html", message=items)
-    else:
-        return render_template("index.html",
-                               column_names=items.columns.values,
-                               row_data=list(items.values.tolist()),
-                               zip=zip,
-                               user=user)
+
+    elif isinstance(items, pd.DataFrame):
+        print("DEBUG - items.empty:", items.empty)
+        if not items.empty:
+            return render_template("index.html",
+                       column_names=list(items.columns.values),
+                       row_data=items.values.tolist(),
+                       zip=zip,
+                       user=user)
+        else:
+            return render_template("index.html", message="No recommendations found for this user.")
 
 
 @app.route('/predictSentiment', methods=['POST'])

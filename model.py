@@ -11,15 +11,7 @@ tfidf_vectorizer = pickle.load(open(os.path.join(root_path, "tfidf_vectorizer.pk
 logreg = pickle.load(open(os.path.join(root_path, "final_model.pkl"), "rb"))
 
 def get_sentiment_recommendations(user):
-  """
-    Recommend products to the user based on positive sentiment.
     
-    Args:
-        user (str): User ID
-
-    Returns:
-        pd.DataFrame or str: Product recommendations or error message
-    """
     if user in user_final_rating.index:
         recommendations = list(user_final_rating.loc[user].sort_values(ascending=False)[:20].index)
         temp = prod_reviews_final_data[prod_reviews_final_data['id'].isin(recommendations)].copy()
@@ -34,13 +26,13 @@ def get_sentiment_recommendations(user):
         temp_grouped["pos_sentiment_percent"] = np.round(
             temp_grouped["pos_review_count"] / temp_grouped["total_review_count"] * 100, 2
         )
-        return temp_grouped.sort_values("pos_sentiment_percent", ascending=False)
+        return temp_grouped.sort_values("pos_sentiment_percent", ascending=False)[:5]
     else:
         return f"User name '{user}' doesn't exist."
 
 #"""function to classify the sentiment to 1/0 - positive or negative - using the trained ML model"""
 
-def classify_sentiment(self, review_text):
+def classify_sentiment(review_text):
     """
     Classify free-form review text as positive (1) or negative (0).
     
@@ -50,6 +42,7 @@ def classify_sentiment(self, review_text):
     Returns:
         int: 0 for negative, 1 for positive
     """
+    review_text = review_text.lower().strip()
     X = tfidf_vectorizer.transform([review_text])
     y_pred = logreg.predict(X)
-    return y_pred[0]
+    return int(y_pred[0])
