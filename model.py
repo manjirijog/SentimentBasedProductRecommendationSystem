@@ -26,7 +26,8 @@ def get_sentiment_recommendations(user):
         temp_grouped["pos_sentiment_percent"] = np.round(
             temp_grouped["pos_review_count"] / temp_grouped["total_review_count"] * 100, 2
         )
-        return temp_grouped.sort_values("pos_sentiment_percent", ascending=False)[:5]
+        temp_grouped.columns = ['ProductName', 'ProductReviewPredictedSentiment', 'NumberOfPositiveReviews', 'TotalNumberOfReviews', 'PercentageofPositiveReviews']
+        return temp_grouped.sort_values("PercentageofPositiveReviews", ascending=False)[:5]
     else:
         return f"User name '{user}' doesn't exist."
 
